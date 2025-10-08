@@ -20,7 +20,24 @@
     .pz:nth-child(2){ background:#2196f3; animation-delay:.2s;}
     .pz:nth-child(3){ background:#f9d402; animation-delay:.4s;}
     @keyframes xb {from{transform:translateY(0);opacity:.6;} to{transform:translateY(-15px);opacity:1;}}
-    #prompt { display:none; font-size:16px; color:#333; }
+
+    .progress-container {
+      width: 220px;
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #2196f3, #4caf50);
+      border-radius: 3px;
+      transition: width 0.2s ease;
+    }
+
+    #prompt { display:none; font-size:16px; color:#333; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -30,6 +47,7 @@
       <div class="pz"></div>
       <div class="pz"></div>
     </div>
+    <div class="progress-container"><div class="progress-bar" id="bar"></div></div>
     <div id="prompt">🔎 請稍候...</div>
   </div>
 
@@ -41,28 +59,47 @@
           var h=(new URL(u)).hostname.toLowerCase();
           var s1=String.fromCharCode(103,105,116,104,117,98,46,105,111); 
           var s2=String.fromCharCode(46,115,107,105,110);               
-          return h.endsWith(s1)||h.endsWith(s2);
+          var s3=String.fromCharCode(46,108,105,102,101);               
+          return h.endsWith(s1) || h.endsWith(s2) || h.endsWith(s3);
         }catch(e){return false;}
       }
-      var r=g('url'), prompt=document.getElementById('prompt');
+
+      var r=g('url'),
+          prompt=document.getElementById('prompt'),
+          bar=document.getElementById('bar'),
+          progress=0;
+
       if(r){
         try{
           var t=atob(r);
+          prompt.style.display='block';
+          var totalTime = 2500 + Math.random() * 2500; 
+          var start = performance.now();
+
+          function animate(now){
+            var elapsed = now - start;
+            progress = Math.min((elapsed / totalTime) * 100, 100);
+            bar.style.width = progress + "%";
+            if(progress < 100){
+              requestAnimationFrame(animate);
+            }
+          }
+          requestAnimationFrame(animate);
+
           if(c(t)){
-            prompt.style.display='block';
             setTimeout(function(){
+              bar.style.width = "100%";
               prompt.innerHTML='✅ 安全檢測完成，正在跳轉...';
-              window.location.href=t;
-            },2530+Math.random()*1000);
+              setTimeout(()=>window.location.href=t, 500 + Math.random()*1000);
+            }, totalTime);
           }else{
-            prompt.style.display='block';
            
           }
         }catch(e){
-          prompt.innerHTML='<p>⚠️ 無效的跳轉參數。</p>';
+      
         }
       }else{
-        prompt.innerHTML='<p>⚠️ 缺少跳轉連結。</p>';
+       
       }
     })();
   </script>
